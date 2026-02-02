@@ -106,11 +106,11 @@ const fs = require('fs');
 const privateKey = fs.readFileSync('jwtRS512-ec.key');
 
 const payload = {
-    iss: 'EC_AIMC',        // ✅ ผู้ส่ง = EC
-    sub: 'EC_AIMC',        // ✅ ผู้ส่ง = EC
-    aud: 'https://aimc.or.th/center/aimc_wr_v2/api/auth/token',  // ✅ ผู้รับ = WR
+    iss: 'EC_AIMC',
+    sub: 'EC_AIMC',
+    aud: 'https://aimc.or.th/center/aimc_wr_v2/api/auth/token',
     iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + 300, // 5 minutes
+    exp: Math.floor(Date.now() / 1000) + 300,
     jti: 'unique-id-' + Date.now()
 };
 
@@ -192,11 +192,11 @@ php convert_key_to_pem.php keys/ECPrivateKey.xml pem/jwtRS512-ec.key
 $privateKeyXml = file_get_contents('keys/WRPrivateKey.xml');
 
 $payload = array(
-    'iss' => 'WR_AIMC',    // ✅ ผู้ส่ง = WR
-    'sub' => 'WR_AIMC',    // ✅ ผู้ส่ง = WR
-    'aud' => 'https://api.dev.sete.skooldio.dev/exg/api/auth/token',  // ✅ ผู้รับ = EC
+    'iss' => 'WR_AIMC',
+    'sub' => 'WR_AIMC',
+    'aud' => 'https://api.dev.sete.skooldio.dev/exg/api/auth/token',
     'iat' => time(),
-    'exp' => time() + 300, // 5 minutes
+    'exp' => time() + 300,
     'jti' => uniqid('token-', true)
 );
 $clientAssertion = JwtToken::sign($payload, $privateKeyXml);
