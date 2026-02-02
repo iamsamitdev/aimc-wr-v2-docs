@@ -5,7 +5,7 @@ API สำหรับเชื่อมต่อระหว่าง Web Regis
 
 **Version:** 2.0  
 **PHP Version:** 5.6.40+  
-**Base URL (WR):** `https://aimc.or.th/center/aimc_wr_v2/api`  
+**Base URL (WR):** `https://aimc.or.th/center/WR_AIMC_v2/api`  
 **Base URL (EC):** `https://api.dev.sete.skooldio.dev/exg/api`
 
 ## Requirements
@@ -36,8 +36,8 @@ define('DB_PASS', 'your_password');
 define('EC_API_BASE_URL', 'https://api.dev.sete.skooldio.dev/exg/api');
 
 // Client IDs
-define('WR_CLIENT_ID', 'AIMC_WR_001');
-define('EC_CLIENT_ID', 'EC_AIMC_001');
+define('WR_CLIENT_ID', 'WR_AIMC');
+define('EC_CLIENT_ID', 'EC_AIMC');
 ```
 
 ### 3. Generate Keys (for testing)
@@ -106,9 +106,9 @@ const fs = require('fs');
 const privateKey = fs.readFileSync('jwtRS512-ec.key');
 
 const payload = {
-    iss: 'EC_AIMC_001',
-    sub: 'EC_AIMC_001',
-    aud: 'https://aimc.or.th/center/aimc_wr_v2/api/auth/token',
+    iss: 'WR_AIMC',
+    sub: 'WR_AIMC',
+    aud: 'https://aimc.or.th/center/WR_AIMC_v2/api/auth/token',
     iat: Math.floor(Date.now() / 1000),
     exp: Math.floor(Date.now() / 1000) + 300, // 5 minutes
     jti: 'unique-id-' + Date.now()
@@ -117,17 +117,29 @@ const payload = {
 const clientAssertion = jwt.sign(payload, privateKey, { algorithm: 'RS512' });
 ```
 
+ตัวอย่าง Payload:
+```json
+{
+  "iss": "WR_AIMC",
+  "sub": "WR_AIMC",
+  "aud": "https://aimc.or.th/center/WR_AIMC_v2/api/auth/token",
+  "iat": 2770051666,
+  "exp": 2770051666,
+  "jti": "test-c7da200dbd32b96f"
+}
+```
+
 #### 4. EC ขอ Token จาก WR
 
 ```http
-POST https://aimc.or.th/center/aimc_wr_v2/api/auth/token
+POST https://aimc.or.th/center/WR_AIMC_v2/api/auth/token
 Content-Type: application/json
 
 {
     "grant_type": "client_credentials",
     "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
     "client_assertion": "<JWT ที่ sign แล้ว>",
-    "client_id": "EC_AIMC_001"
+    "client_id": "WR_AIMC"
 }
 ```
 
@@ -178,14 +190,25 @@ php convert_key_to_pem.php keys/ECPrivateKey.xml pem/jwtRS512-ec.key
 $privateKeyXml = file_get_contents('keys/WRPrivateKey.xml');
 
 $payload = array(
-    'iss' => 'AIMC_WR_001',
-    'sub' => 'AIMC_WR_001',
-    'aud' => 'https://api.dev.sete.skooldio.dev/exg/api',
+    'iss' => 'EC_AIMC',
+    'sub' => 'EC_AIMC',
+    'aud' => 'https://api.dev.sete.skooldio.dev/exg/api/auth/token',
     'iat' => time(),
     'exp' => time() + 3600, // 1 hour
     'jti' => uniqid('token-', true)
 );
 $accessToken = JwtToken::generate($payload, $privateKeyXml);
+```
+ตัวอย่าง Payload:
+```json
+{
+  "iss": "EC_AIMC",
+  "sub": "EC_AIMC",
+  "aud": "https://api.dev.sete.skooldio.dev/exg/api/auth/token",
+  "iat": 2770051666,
+  "exp": 2770051666,
+  "jti": "test-c7da200dbd32b96f"
+}
 ```
 
 #### 6. WR ขอ Token จาก EC
@@ -193,15 +216,13 @@ $accessToken = JwtToken::generate($payload, $privateKeyXml);
 ```http
 POST https://api.dev.sete.skooldio.dev/exg/api/auth/token
 Content-Type: application/json
-
 {
-    "grant_type": "client_credentials",
-    "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-    "client_assertion": "<JWT ที่ sign แล้ว>",
-    "client_id": "AIMC_WR_001"
+  "grant_type": "client_credentials",
+  "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+  "client_assertion": "<JWT ที่ sign แล้ว>",
+  "client_id": "EC_AIMC"
 }
 ```
-
 ---
 
 ### 📁 สรุป Key Files ในแต่ละฝั่ง
@@ -276,16 +297,16 @@ Content-Type: application/json
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Initial Key Exchange                      │
+│                    Initial Key Exchange                     │
 ├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│   WR สร้าง Key Pair          EC สร้าง Key Pair              │
-│   ├── WRPrivateKey.xml       ├── jwtRS512-ec.key           │
-│   └── WRPublicKey.xml        └── jwtRS512-ec.key.pub       │
-│                                                              │
-│            WRPublicKey.xml ──────────────►                   │
+│                                                             │
+│   WR สร้าง Key Pair          EC สร้าง Key Pair                 │
+│   ├── WRPrivateKey.xml       ├── jwtRS512-ec.key            │
+│   └── WRPublicKey.xml        └── jwtRS512-ec.key.pub        │
+│                                                             │
+│            WRPublicKey.xml ──────────────►                  │
 │            ◄────────────── jwtRS512-wr.key.pub              │
-│                                                              │
+│                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 ---
@@ -342,13 +363,13 @@ x-app-token: <access_token>
 
 ### Request
 ```bash
-curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/auth/token \
+curl -X POST https://aimc.or.th/center/WR_AIMC_v2/api/auth/token \
   -H "Content-Type: application/json" \
   -d '{
     "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
     "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
     "client_assertion": "<JWT_TOKEN_SIGNED_WITH_EC_PRIVATE_KEY>",
-    "client_id": "EC_AIMC_001"
+    "client_id": "EC_AIMC"
   }'
 ```
 
@@ -358,14 +379,14 @@ curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/auth/token \
 | grant_type | string | ✅ | Fix: `urn:ietf:params:oauth:grant-type:jwt-bearer` |
 | client_assertion_type | string | ✅ | Fix: `urn:ietf:params:oauth:client-assertion-type:jwt-bearer` |
 | client_assertion | string | ✅ | JWT signed ด้วย EC Private Key |
-| client_id | string | ✅ | Client ID ของ EC (`EC_AIMC_001`) |
+| client_id | string | ✅ | Client ID ของ EC (`EC_AIMC`) |
 
 ### JWT Payload (client_assertion)
 ```json
 {
-  "iss": "EC_AIMC_001",
-  "sub": "EC_AIMC_001",
-  "aud": "https://aimc.or.th/center/aimc_wr_v2/api/auth/token",
+  "iss": "EC_AIMC",
+  "sub": "EC_AIMC",
+  "aud": "https://aimc.or.th/center/WR_AIMC_v2/api/auth/token",
   "exp": 1738500000,
   "iat": 1738496400,
   "jti": "unique-request-id-123"
@@ -395,7 +416,7 @@ curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/auth/token \
 
 ### Request
 ```bash
-curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/examEvents \
+curl -X POST https://aimc.or.th/center/WR_AIMC_v2/api/examEvents \
   -H "Content-Type: application/json" \
   -H "x-app-token: <access_token>" \
   -d '{
@@ -488,7 +509,7 @@ curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/examEvents \
 
 ### Request
 ```bash
-curl -X PATCH https://aimc.or.th/center/aimc_wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef \
+curl -X PATCH https://aimc.or.th/center/WR_AIMC_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef \
   -H "Content-Type: application/json" \
   -H "x-app-token: <access_token>" \
   -d '{
@@ -535,7 +556,7 @@ curl -X PATCH https://aimc.or.th/center/aimc_wr_v2/api/examEvents/a1b2c3d4-e5f6-
 
 ### Request
 ```bash
-curl -X GET "https://aimc.or.th/center/aimc_wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/examinees" \
+curl -X GET "https://aimc.or.th/center/WR_AIMC_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/examinees" \
   -H "Content-Type: application/json" \
   -H "x-app-token: <access_token>"
 ```
@@ -599,7 +620,7 @@ curl -X GET "https://aimc.or.th/center/aimc_wr_v2/api/examEvents/a1b2c3d4-e5f6-7
 
 ### Request
 ```bash
-curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/examResults \
+curl -X POST https://aimc.or.th/center/WR_AIMC_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/examResults \
   -H "Content-Type: application/json" \
   -H "x-app-token: <access_token>" \
   -d '{
@@ -663,7 +684,7 @@ curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/examEvents/a1b2c3d4-e5f6-7
 
 ### Request
 ```bash
-curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/announcements \
+curl -X POST https://aimc.or.th/center/WR_AIMC_v2/api/announcements \
   -H "Content-Type: application/json" \
   -H "x-app-token: <access_token>" \
   -d '{
@@ -731,7 +752,7 @@ Content-Type: application/json
   "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
   "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
   "client_assertion": "<JWT_TOKEN_SIGNED_WITH_WR_PRIVATE_KEY>",
-  "client_id": "AIMC_WR_001"
+  "client_id": "WR_AIMC"
 }
 ```
 
@@ -1165,28 +1186,28 @@ wr_v2/
 
 ```bash
 # 1. Get token
-TOKEN=$(curl -s -X POST https://aimc.or.th/center/aimc_wr_v2/api/auth/token \
+TOKEN=$(curl -s -X POST https://aimc.or.th/center/WR_AIMC_v2/api/auth/token \
   -H "Content-Type: application/json" \
   -d '{
     "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
     "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
     "client_assertion": "<JWT>",
-    "client_id": "EC_AIMC_001"
+    "client_id": "WR_AIMC"
   }' | jq -r '.access_token')
 
 # 2. Create exam event
-curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/examEvents \
+curl -X POST https://aimc.or.th/center/WR_AIMC_v2/api/examEvents \
   -H "Content-Type: application/json" \
   -H "x-app-token: $TOKEN" \
   -d '{"examEventId":"test-001","name":"Test Exam","examType":"IC_PLAIN",...}'
 
 # 3. Get examinees
-curl -X GET "https://aimc.or.th/center/aimc_wr_v2/api/examEvents/test-001/examinees" \
+curl -X GET "https://aimc.or.th/center/WR_AIMC_v2/api/examEvents/test-001/examinees" \
   -H "Content-Type: application/json" \
   -H "x-app-token: $TOKEN"
 
 # 4. Send results
-curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/examEvents/test-001/examResults \
+curl -X POST https://aimc.or.th/center/WR_AIMC_v2/api/examEvents/test-001/examResults \
   -H "Content-Type: application/json" \
   -H "x-app-token: $TOKEN" \
   -d '{"examineeResults":[{"examineeId":"ex-001","idType":"CITIZEN_ID","idNumber":"1234567890123","result":"PASSED"}]}'
@@ -1205,8 +1226,8 @@ curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/examEvents/test-001/examRe
 # สร้าง JWT client_assertion ก่อน (ใช้ WR Private Key)
 # JWT Payload:
 # {
-#   "iss": "AIMC_WR_001",
-#   "sub": "AIMC_WR_001", 
+#   "iss": "EC_AIMC",
+#   "sub": "EC_AIMC", 
 #   "aud": "https://api.dev.sete.skooldio.dev/exg/api/auth/token",
 #   "exp": 1738500000,
 #   "iat": 1738496400,
@@ -1219,7 +1240,7 @@ EC_TOKEN=$(curl -s -X POST https://api.dev.sete.skooldio.dev/exg/api/auth/token 
     "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
     "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
     "client_assertion": "<JWT_SIGNED_WITH_WR_PRIVATE_KEY>",
-    "client_id": "AIMC_WR_001"
+    "client_id": "EC_AIMC"
   }' | jq -r '.access_token')
 
 echo "EC Token: $EC_TOKEN"
