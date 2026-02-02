@@ -42,22 +42,13 @@ define('EC_CLIENT_ID', 'EC_AIMC_001');
 
 ### 3. Generate Keys (for testing)
 ```bash
-php generate_keys.php
+php generate_keys.php           # สร้างทั้ง WR และ EC keys (default)
+php generate_keys.php --wr-only # สร้างเฉพาะ WR keys
+php generate_keys.php --ec-only # สร้างเฉพาะ EC keys (สำหรับ testing)
+php generate_keys.php --all     # สร้างทั้งหมด
 ```
 
-### 4. Convert Keys (XML ↔ PEM)
-```bash
-php convert_key_to_pem.php keys/WRPublicKey.xml pem/jwtRS512-wr.key.pub
-```
-> jwtRS512-wr.key.pub คือ Public Key ของ WR ในรูปแบบ PEM
-
-### 5. Convert PEM (PEM → XML)
-```bash
-php convert_pem_to_xml.php pem/jwtRS512-ec.key.pub keys/ECPublicKey.xml
-```
-> ECPublicKey.xml คือ Public Key ของ EC ในรูปแบบ XML
-
-### 6. Key Exchange with Exam Center
+### 4. Key Exchange with Exam Center
 1. ส่ง `pem/jwtRS512-wr.key.pub` ให้ Exam Center
 2. รับ `jwtRS512-ec.key.pub` จาก Exam Center และวางใน `pem/jwtRS512-ec.key.pub`
 3. แปลง `pem/jwtRS512-ec.key.pub` เป็น XML
@@ -164,46 +155,51 @@ openssl rsa -in jwtRS512-wr.key -pubout -out jwtRS512-wr.key.pub
 | `WRPrivateKey.xml` | XML | Sign access_token JWT | **🔒 เก็บลับ** ที่ WR เท่านั้น |
 | `WRPublicKey.xml` | XML | - | **📤 ส่งให้ EC** |
 
-#### 3. การแปลง Key ระหว่าง PEM ↔ XML
-
-**PEM → XML** (เมื่อรับ Public Key จาก EC)
+#### 3. Convert PEM (PEM → XML)
 ```bash
-php convert_pem_to_xml.php jwtRS512-ec.key.pub ECPublicKey.xml
+# แปลง Public Key ของ EC ที่ได้รับมา เป็น XML
+php convert_pem_to_xml.php pem/jwtRS512-ec.key.pub keys/ECPublicKey.xml
 ```
+> ECPublicKey.xml คือ Public Key ของ EC ในรูปแบบ XML
 
-**XML → PEM** (เมื่อส่ง Public Key ให้ EC)
+#### 4. Convert Keys (XML ↔ PEM)
 ```bash
-php convert_xml_to_pem.php WRPublicKey.xml jwtRS512-wr.key.pub
+# แปลงสำหรับส่ง Public Key ของ WR ให้ EC
+php convert_key_to_pem.php keys/WRPublicKey.xml pem/jwtRS512-wr.key.pub
+
+# แปลงสำหรับเก็บ Private Key ของ EC ในรูปแบบ PEM (สำหรับ testing)
+php convert_key_to_pem.php keys/ECPrivateKey.xml pem/jwtRS512-ec.key
+```
+> jwtRS512-wr.key.pub คือ Public Key ของ WR ในรูปแบบ PEM
+
+#### 5. WR Sign JWT (access_token) - PHP Example
+
+```php
+$privateKeyXml = file_get_contents('keys/WRPrivateKey.xml');
+
+$payload = array(
+    'iss' => 'AIMC_WR_001',
+    'sub' => 'AIMC_WR_001',
+    'aud' => 'https://api.dev.sete.skooldio.dev/exg/api',
+    'iat' => time(),
+    'exp' => time() + 3600, // 1 hour
+    'jti' => uniqid('token-', true)
+);
+$accessToken = JwtToken::generate($payload, $privateKeyXml);
 ```
 
----
+#### 6. WR ขอ Token จาก EC
 
-### 🔄 ขั้นตอนแลกเปลี่ยน Key (Step by Step)
+```http
+POST https://api.dev.sete.skooldio.dev/exg/api/auth/token
+Content-Type: application/json
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  Step 1: EC สร้าง Key Pair                                      │
-│  ───────────────────────────────────────────────────────────    │
-│  EC สร้าง: jwtRS512-ec.key (private) + jwtRS512-ec.key.pub     │
-│  EC ส่ง: jwtRS512-ec.key.pub ──────────────────────▶ WR        │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  Step 2: WR รับและแปลง EC Public Key                           │
-│  ───────────────────────────────────────────────────────────    │
-│  WR รับ: jwtRS512-ec.key.pub                                    │
-│  WR แปลง: PEM → XML → บันทึกเป็น ECPublicKey.xml               │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  Step 3: WR สร้าง Key Pair และส่ง Public Key กลับ              │
-│  ───────────────────────────────────────────────────────────    │
-│  WR สร้าง: WRPrivateKey.xml + WRPublicKey.xml                  │
-│  WR แปลง: XML → PEM → jwtRS512-wr.key.pub                      │
-│  WR ส่ง: jwtRS512-wr.key.pub ──────────────────────▶ EC        │
-└─────────────────────────────────────────────────────────────────┘
+{
+    "grant_type": "client_credentials",
+    "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+    "client_assertion": "<JWT ที่ sign แล้ว>",
+    "client_id": "AIMC_WR_001"
+}
 ```
 
 ---
