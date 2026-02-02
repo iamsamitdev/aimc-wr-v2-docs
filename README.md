@@ -5,8 +5,8 @@ API สำหรับเชื่อมต่อระหว่าง Web Regis
 
 **Version:** 2.0  
 **PHP Version:** 5.6.40+  
-**Base URL (WR):** `https://your-domain/wr_v2/api`  
-**Base URL (EC):** `https://exam1.setgroup.or.th/api/v2`
+**Base URL (WR):** `https://aimc.or.th/center/aimc_wr_v2/api`  
+**Base URL (EC):** `https://api.dev.sete.skooldio.dev/exg/api`
 
 ## Requirements
 - PHP 5.6.40+
@@ -33,7 +33,7 @@ define('DB_USER', 'your_username');
 define('DB_PASS', 'your_password');
 
 // Exam Center API URL
-define('EC_API_BASE_URL', 'https://exam1.setgroup.or.th/api/v2');
+define('EC_API_BASE_URL', 'https://api.dev.sete.skooldio.dev/exg/api');
 
 // Client IDs
 define('WR_CLIENT_ID', 'AIMC_WR_001');
@@ -150,7 +150,7 @@ x-app-token: <access_token>
 
 ### Request
 ```bash
-curl -X POST https://your-domain/wr_v2/api/auth/token \
+curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/auth/token \
   -H "Content-Type: application/json" \
   -d '{
     "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
@@ -173,7 +173,7 @@ curl -X POST https://your-domain/wr_v2/api/auth/token \
 {
   "iss": "EC_AIMC_001",
   "sub": "EC_AIMC_001",
-  "aud": "https://your-domain/wr_v2/api/auth/token",
+  "aud": "https://aimc.or.th/center/aimc_wr_v2/api/auth/token",
   "exp": 1738500000,
   "iat": 1738496400,
   "jti": "unique-request-id-123"
@@ -203,7 +203,7 @@ curl -X POST https://your-domain/wr_v2/api/auth/token \
 
 ### Request
 ```bash
-curl -X POST https://your-domain/wr_v2/api/examEvents \
+curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/examEvents \
   -H "Content-Type: application/json" \
   -H "x-app-token: <access_token>" \
   -d '{
@@ -297,7 +297,7 @@ curl -X POST https://your-domain/wr_v2/api/examEvents \
 
 ### Request
 ```bash
-curl -X PATCH https://your-domain/wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef \
+curl -X PATCH https://aimc.or.th/center/aimc_wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef \
   -H "Content-Type: application/json" \
   -H "x-app-token: <access_token>" \
   -d '{
@@ -344,7 +344,7 @@ curl -X PATCH https://your-domain/wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1
 
 ### Request
 ```bash
-curl -X GET "https://your-domain/wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/examinees" \
+curl -X GET "https://aimc.or.th/center/aimc_wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/examinees" \
   -H "Content-Type: application/json" \
   -H "x-app-token: <access_token>"
 ```
@@ -408,7 +408,7 @@ curl -X GET "https://your-domain/wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-12
 
 ### Request
 ```bash
-curl -X POST https://your-domain/wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/examResults \
+curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/examResults \
   -H "Content-Type: application/json" \
   -H "x-app-token: <access_token>" \
   -d '{
@@ -472,7 +472,7 @@ curl -X POST https://your-domain/wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-12
 
 ### Request
 ```bash
-curl -X POST https://your-domain/wr_v2/api/announcements \
+curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/announcements \
   -H "Content-Type: application/json" \
   -H "x-app-token: <access_token>" \
   -d '{
@@ -533,7 +533,7 @@ if ($result) {
 
 ### Request (ที่ส่งไป EC)
 ```json
-POST https://exam1.setgroup.or.th/api/v2/auth/token
+POST https://api.dev.sete.skooldio.dev/exg/api/auth/token
 Content-Type: application/json
 
 {
@@ -585,7 +585,7 @@ if ($result['success']) {
 
 ### Request (ที่ส่งไป EC)
 ```json
-POST https://exam1.setgroup.or.th/api/v2/blocked-users/checks
+POST https://api.dev.sete.skooldio.dev/exg/api/blocked-users/checks
 Content-Type: application/json
 x-app-token: <access_token>
 
@@ -645,7 +645,7 @@ if ($result['success']) {
 
 ### Request (ที่ส่งไป EC)
 ```
-GET https://exam1.setgroup.or.th/api/v2/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/examResults
+GET https://api.dev.sete.skooldio.dev/exg/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/examResults
 Content-Type: application/json
 x-app-token: <access_token>
 ```
@@ -712,7 +712,7 @@ if ($result['success']) {
 
 ### Request (ที่ส่งไป EC)
 ```json
-PATCH https://exam1.setgroup.or.th/api/v2/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/examinees
+PATCH https://api.dev.sete.skooldio.dev/exg/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/examinees
 Content-Type: application/json
 x-app-token: <access_token>
 
@@ -789,7 +789,7 @@ if ($result['success']) {
 
 ### Request (ที่ส่งไป EC)
 ```json
-POST https://exam1.setgroup.or.th/api/v2/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/updateStatus
+POST https://api.dev.sete.skooldio.dev/exg/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/updateStatus
 Content-Type: application/json
 x-app-token: <access_token>
 
@@ -852,7 +852,7 @@ if ($result['success']) {
 
 ### Request (ที่ส่งไป EC)
 ```
-GET https://exam1.setgroup.or.th/api/v2/certificates/cert-uuid-001
+GET https://api.dev.sete.skooldio.dev/exg/api/certificates/cert-uuid-001
 Content-Type: application/json
 x-app-token: <access_token>
 Accept: application/pdf
@@ -974,7 +974,7 @@ wr_v2/
 
 ```bash
 # 1. Get token
-TOKEN=$(curl -s -X POST https://your-domain/wr_v2/api/auth/token \
+TOKEN=$(curl -s -X POST https://aimc.or.th/center/aimc_wr_v2/api/auth/token \
   -H "Content-Type: application/json" \
   -d '{
     "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
@@ -984,18 +984,18 @@ TOKEN=$(curl -s -X POST https://your-domain/wr_v2/api/auth/token \
   }' | jq -r '.access_token')
 
 # 2. Create exam event
-curl -X POST https://your-domain/wr_v2/api/examEvents \
+curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/examEvents \
   -H "Content-Type: application/json" \
   -H "x-app-token: $TOKEN" \
   -d '{"examEventId":"test-001","name":"Test Exam","examType":"IC_PLAIN",...}'
 
 # 3. Get examinees
-curl -X GET "https://your-domain/wr_v2/api/examEvents/test-001/examinees" \
+curl -X GET "https://aimc.or.th/center/aimc_wr_v2/api/examEvents/test-001/examinees" \
   -H "Content-Type: application/json" \
   -H "x-app-token: $TOKEN"
 
 # 4. Send results
-curl -X POST https://your-domain/wr_v2/api/examEvents/test-001/examResults \
+curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/examEvents/test-001/examResults \
   -H "Content-Type: application/json" \
   -H "x-app-token: $TOKEN" \
   -d '{"examineeResults":[{"examineeId":"ex-001","idType":"CITIZEN_ID","idNumber":"1234567890123","result":"PASSED"}]}'
@@ -1006,7 +1006,7 @@ curl -X POST https://your-domain/wr_v2/api/examEvents/test-001/examResults \
 ```bash
 # ============================================
 # WR → EC API Testing with cURL
-# Base URL: https://exam1.setgroup.or.th/api/v2
+# Base URL: https://api.dev.sete.skooldio.dev/exg/api
 # ============================================
 
 # 1. Get Access Token from EC
@@ -1016,13 +1016,13 @@ curl -X POST https://your-domain/wr_v2/api/examEvents/test-001/examResults \
 # {
 #   "iss": "AIMC_WR_001",
 #   "sub": "AIMC_WR_001", 
-#   "aud": "https://exam1.setgroup.or.th/api/v2/auth/token",
+#   "aud": "https://api.dev.sete.skooldio.dev/exg/api/auth/token",
 #   "exp": 1738500000,
 #   "iat": 1738496400,
 #   "jti": "unique-request-id-123"
 # }
 
-EC_TOKEN=$(curl -s -X POST https://exam1.setgroup.or.th/api/v2/auth/token \
+EC_TOKEN=$(curl -s -X POST https://api.dev.sete.skooldio.dev/exg/api/auth/token \
   -H "Content-Type: application/json" \
   -d '{
     "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
@@ -1035,7 +1035,7 @@ echo "EC Token: $EC_TOKEN"
 
 # 2. Check Blocklist
 # -------------------------------------------
-curl -X POST https://exam1.setgroup.or.th/api/v2/blocked-users/checks \
+curl -X POST https://api.dev.sete.skooldio.dev/exg/api/blocked-users/checks \
   -H "Content-Type: application/json" \
   -H "x-app-token: $EC_TOKEN" \
   -d '{
@@ -1062,7 +1062,7 @@ curl -X POST https://exam1.setgroup.or.th/api/v2/blocked-users/checks \
 
 # 3. Enroll Examinees (PATCH)
 # -------------------------------------------
-curl -X PATCH "https://exam1.setgroup.or.th/api/v2/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/examinees" \
+curl -X PATCH "https://api.dev.sete.skooldio.dev/exg/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/examinees" \
   -H "Content-Type: application/json" \
   -H "x-app-token: $EC_TOKEN" \
   -d '[
@@ -1101,7 +1101,7 @@ curl -X PATCH "https://exam1.setgroup.or.th/api/v2/examEvents/a1b2c3d4-e5f6-7890
 
 # 4. Get Exam Results
 # -------------------------------------------
-curl -X GET "https://exam1.setgroup.or.th/api/v2/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/examResults" \
+curl -X GET "https://api.dev.sete.skooldio.dev/exg/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/examResults" \
   -H "Content-Type: application/json" \
   -H "x-app-token: $EC_TOKEN"
 
@@ -1116,25 +1116,25 @@ curl -X GET "https://exam1.setgroup.or.th/api/v2/examEvents/a1b2c3d4-e5f6-7890-a
 # 5. Update Exam Event Status
 # -------------------------------------------
 # Open registration
-curl -X POST "https://exam1.setgroup.or.th/api/v2/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/updateStatus" \
+curl -X POST "https://api.dev.sete.skooldio.dev/exg/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/updateStatus" \
   -H "Content-Type: application/json" \
   -H "x-app-token: $EC_TOKEN" \
   -d '{"status": "OPEN_FOR_REGISTRATION"}'
 
 # Close registration
-curl -X POST "https://exam1.setgroup.or.th/api/v2/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/updateStatus" \
+curl -X POST "https://api.dev.sete.skooldio.dev/exg/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/updateStatus" \
   -H "Content-Type: application/json" \
   -H "x-app-token: $EC_TOKEN" \
   -d '{"status": "REGISTRATION_CLOSED"}'
 
 # Mark as full
-curl -X POST "https://exam1.setgroup.or.th/api/v2/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/updateStatus" \
+curl -X POST "https://api.dev.sete.skooldio.dev/exg/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/updateStatus" \
   -H "Content-Type: application/json" \
   -H "x-app-token: $EC_TOKEN" \
   -d '{"status": "SESSION_FULL"}'
 
 # Cancel event
-curl -X POST "https://exam1.setgroup.or.th/api/v2/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/updateStatus" \
+curl -X POST "https://api.dev.sete.skooldio.dev/exg/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef/updateStatus" \
   -H "Content-Type: application/json" \
   -H "x-app-token: $EC_TOKEN" \
   -d '{"status": "CANCELED"}'
@@ -1145,14 +1145,14 @@ curl -X POST "https://exam1.setgroup.or.th/api/v2/examEvents/a1b2c3d4-e5f6-7890-
 # 6. Download Certificate PDF
 # -------------------------------------------
 # Download and save to file
-curl -X GET "https://exam1.setgroup.or.th/api/v2/certificates/cert-uuid-001" \
+curl -X GET "https://api.dev.sete.skooldio.dev/exg/api/certificates/cert-uuid-001" \
   -H "Content-Type: application/json" \
   -H "x-app-token: $EC_TOKEN" \
   -H "Accept: application/pdf" \
   -o certificate.pdf
 
 # Check response headers
-curl -I -X GET "https://exam1.setgroup.or.th/api/v2/certificates/cert-uuid-001" \
+curl -I -X GET "https://api.dev.sete.skooldio.dev/exg/api/certificates/cert-uuid-001" \
   -H "Content-Type: application/json" \
   -H "x-app-token: $EC_TOKEN" \
   -H "Accept: application/pdf"
@@ -1236,178 +1236,6 @@ print_r($result);
 5. **Token Expiry** - Token หมดอายุใน 1 ชั่วโมง ต้อง refresh ใหม่
 6. **Key Rotation** - เปลี่ยน keys ทุก 6-12 เดือน
 7. **Logging** - ตรวจสอบ logs เป็นประจำ
-
----
-
-## Docker Deployment
-
-### ไฟล์ Docker ที่มี
-
-| ไฟล์ | คำอธิบาย |
-|------|----------|
-| `Dockerfile` | PHP 5.6 with Apache |
-| `docker-compose.yml` | PHP + MySQL 5.5 + phpMyAdmin |
-| `docker/apache.conf` | Apache virtual host config |
-| `docker/php.ini` | PHP configuration |
-| `docker/mysql-init.sql` | MySQL initialization + sample data |
-| `docker/config.docker.php` | Config สำหรับ Docker (backup) |
-| `.dockerignore` | Ignore files for Docker build |
-
-### Quick Start
-
-```bash
-# 1. เข้าไปใน folder โปรเจ็กต์
-cd d:\Project\AIMCWebAPI\wr_v2
-
-# 2. Build และ Start containers
-docker-compose up -d --build
-
-# 3. ตรวจสอบสถานะ
-docker-compose ps
-
-# 4. ดู logs
-docker-compose logs -f web
-docker-compose logs -f db
-```
-
-### URLs ที่เข้าถึงได้
-
-| Service | URL | Description |
-|---------|-----|-------------|
-| **WR API** | http://localhost:8088 | API Endpoint |
-| **phpMyAdmin** | http://localhost:8081 | Database Management |
-
-### Database Credentials (Docker)
-
-| Parameter | Value |
-|-----------|-------|
-| Host | `db` (ภายใน container) / `localhost:3360` (จากภายนอก) |
-| Database | `wr_api_v2` |
-| Root Password | `root_password` |
-| User | `wr_user` |
-| Password | `wr_password` |
-
-### ทดสอบ API บน Docker
-
-```bash
-# Test endpoint
-curl http://localhost:8088/api/auth/token
-
-# Test database connection
-curl http://localhost:8088/test.php
-
-# Test health check
-curl http://localhost:8088/
-```
-
-### Docker Commands
-
-```bash
-# Start containers (background)
-docker-compose up -d
-
-# Start containers (with logs)
-docker-compose up
-
-# Stop containers
-docker-compose down
-
-# Stop และลบ volumes (reset database)
-docker-compose down -v
-
-# Rebuild เฉพาะ web
-docker-compose up -d --build web
-
-# Restart specific service
-docker-compose restart web
-docker-compose restart db
-
-# View logs
-docker-compose logs -f web
-docker-compose logs -f db
-docker-compose logs -f phpmyadmin
-
-# เข้า shell ใน container
-docker exec -it wr_api_web bash
-docker exec -it wr_api_db mysql -u root -proot_password
-
-# Check container status
-docker-compose ps
-
-# Check container resource usage
-docker stats wr_api_web wr_api_db
-```
-
-### การตั้งค่า Production
-
-#### 1. แก้ไข Environment Variables ใน docker-compose.yml
-
-```yaml
-environment:
-  MYSQL_ROOT_PASSWORD: <strong_password>
-  MYSQL_PASSWORD: <strong_password>
-```
-
-#### 2. ปิด phpMyAdmin (Production)
-
-Comment out หรือลบ service `phpmyadmin` ใน `docker-compose.yml`
-
-#### 3. ปิด Debug Mode
-
-แก้ไข `docker/php.ini`:
-```ini
-display_errors = Off
-display_startup_errors = Off
-```
-
-#### 4. ตั้งค่า HTTPS (Production)
-
-ใช้ reverse proxy เช่น Nginx หรือ Traefik สำหรับ SSL termination
-
-### Troubleshooting
-
-#### Container ไม่ start
-
-```bash
-# ดู logs
-docker-compose logs web
-docker-compose logs db
-
-# ตรวจสอบ port ว่าถูกใช้อยู่หรือไม่
-netstat -ano | findstr :8080
-netstat -ano | findstr :3306
-```
-
-#### Database connection failed
-
-```bash
-# ตรวจสอบว่า db container พร้อมแล้ว
-docker-compose logs db | grep "ready for connections"
-
-# Restart web หลังจาก db พร้อม
-docker-compose restart web
-```
-
-#### Permission denied on logs/uploads
-
-```bash
-# เข้าไปใน container แล้ว fix permissions
-docker exec -it wr_api_web bash
-chown -R www-data:www-data /var/www/html/logs
-chown -R www-data:www-data /var/www/html/uploads
-chmod -R 777 /var/www/html/logs
-chmod -R 777 /var/www/html/uploads
-```
-
-#### Reset ทุกอย่าง (Clean Start)
-
-```bash
-# Stop และลบทุกอย่าง
-docker-compose down -v --rmi all
-
-# Build ใหม่
-docker-compose up -d --build
-```
 
 ---
 
