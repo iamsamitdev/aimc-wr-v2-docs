@@ -344,7 +344,7 @@ x-app-token: <access_token>
 |--------|----------|-------------|
 | POST | /auth/token | ขอ access token |
 | POST | /examEvents | สร้างรอบสอบใหม่ |
-| PATCH | /examEvents/:id | อัพเดทข้อมูลรอบสอบ |
+| POST/PATCH | /examEvents/:id | อัพเดทข้อมูลรอบสอบ |
 | GET | /examEvents/:id/examinees | ดึงรายชื่อผู้สมัครสอบ |
 | POST | /examEvents/:id/examResults | ส่งผลสอบ |
 | POST | /announcements | สร้างประกาศ |
@@ -511,14 +511,14 @@ curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/examEvents \
 
 ---
 
-## 3. PATCH /examEvents/:id - อัพเดทข้อมูลรอบสอบ
+## 3. POST /examEvents/:id - อัพเดทข้อมูลรอบสอบ
 
-> ⚠️ **หมายเหตุ:** บาง Server (เช่น Apache ที่ aimc.or.th) อาจบล็อก PATCH method โดยตรง  
-> **วิธีแก้ไข:** ใช้ `POST` method พร้อม header `X-HTTP-Method-Override: PATCH` แทน
+> ✅ **หมายเหตุ:** รองรับทั้ง `POST`, `PATCH` และ `PUT` method  
+> แนะนำใช้ `POST` เพราะทำงานได้กับทุก Server โดยไม่ต้องใช้ header พิเศษ
 
-### Request (วิธีที่ 1: PATCH โดยตรง)
+### Request (วิธีที่ 1: POST โดยตรง) ✅ แนะนำ
 ```bash
-curl -X PATCH https://aimc.or.th/center/aimc_wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef \
+curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef \
   -H "Content-Type: application/json" \
   -H "x-app-token: <access_token>" \
   -d '{
@@ -529,12 +529,11 @@ curl -X PATCH https://aimc.or.th/center/aimc_wr_v2/api/examEvents/a1b2c3d4-e5f6-
   }'
 ```
 
-### Request (วิธีที่ 2: POST + X-HTTP-Method-Override) ✅ แนะนำ
+### Request (วิธีที่ 2: PATCH - ยังรองรับอยู่)
 ```bash
-curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef \
+curl -X PATCH https://aimc.or.th/center/aimc_wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef \
   -H "Content-Type: application/json" \
   -H "x-app-token: <access_token>" \
-  -H "X-HTTP-Method-Override: PATCH" \
   -d '{
     "name": "IC Plain - รอบสอบวันที่ 15 มี.ค. 2569 (อัพเดท)",
     "status": "OPEN_FOR_REGISTRATION",
@@ -1480,6 +1479,178 @@ print_r($result);
 5. **Token Expiry** - Token หมดอายุใน 1 ชั่วโมง ต้อง refresh ใหม่
 6. **Key Rotation** - เปลี่ยน keys ทุก 6-12 เดือน
 7. **Logging** - ตรวจสอบ logs เป็นประจำ
+
+---
+
+## Docker Deployment
+
+### ไฟล์ Docker ที่มี
+
+| ไฟล์ | คำอธิบาย |
+|------|----------|
+| `Dockerfile` | PHP 5.6 with Apache |
+| `docker-compose.yml` | PHP + MySQL 5.5 + phpMyAdmin |
+| `docker/apache.conf` | Apache virtual host config |
+| `docker/php.ini` | PHP configuration |
+| `docker/mysql-init.sql` | MySQL initialization + sample data |
+| `docker/config.docker.php` | Config สำหรับ Docker (backup) |
+| `.dockerignore` | Ignore files for Docker build |
+
+### Quick Start
+
+```bash
+# 1. เข้าไปใน folder โปรเจ็กต์
+cd d:\Project\AIMCWebAPI\wr_v2
+
+# 2. Build และ Start containers
+docker-compose up -d --build
+
+# 3. ตรวจสอบสถานะ
+docker-compose ps
+
+# 4. ดู logs
+docker-compose logs -f web
+docker-compose logs -f db
+```
+
+### URLs ที่เข้าถึงได้
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| **WR API** | http://localhost:8088 | API Endpoint |
+| **phpMyAdmin** | http://localhost:8081 | Database Management |
+
+### Database Credentials (Docker)
+
+| Parameter | Value |
+|-----------|-------|
+| Host | `db` (ภายใน container) / `localhost:3360` (จากภายนอก) |
+| Database | `wr_api_v2` |
+| Root Password | `root_password` |
+| User | `wr_user` |
+| Password | `wr_password` |
+
+### ทดสอบ API บน Docker
+
+```bash
+# Test endpoint
+curl http://localhost:8088/api/auth/token
+
+# Test database connection
+curl http://localhost:8088/test.php
+
+# Test health check
+curl http://localhost:8088/
+```
+
+### Docker Commands
+
+```bash
+# Start containers (background)
+docker-compose up -d
+
+# Start containers (with logs)
+docker-compose up
+
+# Stop containers
+docker-compose down
+
+# Stop และลบ volumes (reset database)
+docker-compose down -v
+
+# Rebuild เฉพาะ web
+docker-compose up -d --build web
+
+# Restart specific service
+docker-compose restart web
+docker-compose restart db
+
+# View logs
+docker-compose logs -f web
+docker-compose logs -f db
+docker-compose logs -f phpmyadmin
+
+# เข้า shell ใน container
+docker exec -it wr_api_web bash
+docker exec -it wr_api_db mysql -u root -proot_password
+
+# Check container status
+docker-compose ps
+
+# Check container resource usage
+docker stats wr_api_web wr_api_db
+```
+
+### การตั้งค่า Production
+
+#### 1. แก้ไข Environment Variables ใน docker-compose.yml
+
+```yaml
+environment:
+  MYSQL_ROOT_PASSWORD: <strong_password>
+  MYSQL_PASSWORD: <strong_password>
+```
+
+#### 2. ปิด phpMyAdmin (Production)
+
+Comment out หรือลบ service `phpmyadmin` ใน `docker-compose.yml`
+
+#### 3. ปิด Debug Mode
+
+แก้ไข `docker/php.ini`:
+```ini
+display_errors = Off
+display_startup_errors = Off
+```
+
+#### 4. ตั้งค่า HTTPS (Production)
+
+ใช้ reverse proxy เช่น Nginx หรือ Traefik สำหรับ SSL termination
+
+### Troubleshooting
+
+#### Container ไม่ start
+
+```bash
+# ดู logs
+docker-compose logs web
+docker-compose logs db
+
+# ตรวจสอบ port ว่าถูกใช้อยู่หรือไม่
+netstat -ano | findstr :8080
+netstat -ano | findstr :3306
+```
+
+#### Database connection failed
+
+```bash
+# ตรวจสอบว่า db container พร้อมแล้ว
+docker-compose logs db | grep "ready for connections"
+
+# Restart web หลังจาก db พร้อม
+docker-compose restart web
+```
+
+#### Permission denied on logs/uploads
+
+```bash
+# เข้าไปใน container แล้ว fix permissions
+docker exec -it wr_api_web bash
+chown -R www-data:www-data /var/www/html/logs
+chown -R www-data:www-data /var/www/html/uploads
+chmod -R 777 /var/www/html/logs
+chmod -R 777 /var/www/html/uploads
+```
+
+#### Reset ทุกอย่าง (Clean Start)
+
+```bash
+# Stop และลบทุกอย่าง
+docker-compose down -v --rmi all
+
+# Build ใหม่
+docker-compose up -d --build
+```
 
 ---
 
