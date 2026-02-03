@@ -106,11 +106,11 @@ const fs = require('fs');
 const privateKey = fs.readFileSync('jwtRS512-ec.key');
 
 const payload = {
-    iss: 'EC_AIMC',
-    sub: 'EC_AIMC',
-    aud: 'https://aimc.or.th/center/aimc_wr_v2/api/auth/token',
+    iss: 'EC_AIMC',        // ✅ ผู้ส่ง = EC
+    sub: 'EC_AIMC',        // ✅ ผู้ส่ง = EC
+    aud: 'https://aimc.or.th/center/aimc_wr_v2/api/auth/token',  // ✅ ผู้รับ = WR
     iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + 300,
+    exp: Math.floor(Date.now() / 1000) + 300, // 5 minutes
     jti: 'unique-id-' + Date.now()
 };
 
@@ -192,11 +192,11 @@ php convert_key_to_pem.php keys/ECPrivateKey.xml pem/jwtRS512-ec.key
 $privateKeyXml = file_get_contents('keys/WRPrivateKey.xml');
 
 $payload = array(
-    'iss' => 'WR_AIMC',
-    'sub' => 'WR_AIMC',
-    'aud' => 'https://api.dev.sete.skooldio.dev/exg/api/auth/token',
+    'iss' => 'WR_AIMC',    // ✅ ผู้ส่ง = WR
+    'sub' => 'WR_AIMC',    // ✅ ผู้ส่ง = WR
+    'aud' => 'https://api.dev.sete.skooldio.dev/exg/api/auth/token',  // ✅ ผู้รับ = EC
     'iat' => time(),
-    'exp' => time() + 300,
+    'exp' => time() + 300, // 5 minutes
     'jti' => uniqid('token-', true)
 );
 $clientAssertion = JwtToken::sign($payload, $privateKeyXml);
@@ -513,11 +513,28 @@ curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/examEvents \
 
 ## 3. PATCH /examEvents/:id - อัพเดทข้อมูลรอบสอบ
 
-### Request
+> ⚠️ **หมายเหตุ:** บาง Server (เช่น Apache ที่ aimc.or.th) อาจบล็อก PATCH method โดยตรง  
+> **วิธีแก้ไข:** ใช้ `POST` method พร้อม header `X-HTTP-Method-Override: PATCH` แทน
+
+### Request (วิธีที่ 1: PATCH โดยตรง)
 ```bash
 curl -X PATCH https://aimc.or.th/center/aimc_wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef \
   -H "Content-Type: application/json" \
   -H "x-app-token: <access_token>" \
+  -d '{
+    "name": "IC Plain - รอบสอบวันที่ 15 มี.ค. 2569 (อัพเดท)",
+    "status": "OPEN_FOR_REGISTRATION",
+    "maxCapacity": 150,
+    "registrationEndDate": "2026-03-12"
+  }'
+```
+
+### Request (วิธีที่ 2: POST + X-HTTP-Method-Override) ✅ แนะนำ
+```bash
+curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/examEvents/a1b2c3d4-e5f6-7890-abcd-1234567890ef \
+  -H "Content-Type: application/json" \
+  -H "x-app-token: <access_token>" \
+  -H "X-HTTP-Method-Override: PATCH" \
   -d '{
     "name": "IC Plain - รอบสอบวันที่ 15 มี.ค. 2569 (อัพเดท)",
     "status": "OPEN_FOR_REGISTRATION",
@@ -661,6 +678,11 @@ curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/examEvents/a1b2c3d4-e5f6-7
 | examineeResults[].idType | string | ✅ | ประเภทเอกสาร: `CITIZEN_ID`, `PASSPORT` |
 | examineeResults[].idNumber | string | ✅ | เลขเอกสาร |
 | examineeResults[].result | string | ✅ | ผลสอบ: `PASSED`, `FAILED`, `NONE` |
+| examineeResults[].examEventId | string | ❌ | รหัสรอบสอบ (ใช้จาก URL path ถ้าไม่ส่ง) |
+| examineeResults[].resultDate | string | ❌ | วันที่ประกาศผล ISO 8601 (ใช้วันที่ปัจจุบันถ้าไม่ส่ง) |
+| examineeResults[].examCourseCode | string | ❌ | รหัสวิชาสอบ |
+| examineeResults[].certificateId | string | ❌ | รหัส certificate |
+| examineeResults[].expireAt | string | ❌ | วันหมดอายุ certificate (ISO 8601) |
 
 ### result Values
 | Value | Description |
@@ -694,7 +716,7 @@ curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/announcements \
   -H "Content-Type: application/json" \
   -H "x-app-token: <access_token>" \
   -d '{
-    "announcementId": "announcement-uuid-001",
+    "announcementId": "3f9a1c2e-7d4a-4c2b-9a8e-1f6c8d9e12ab",
     "topic": "แจ้งเลื่อนวันสอบ IC Plain รอบเดือนมีนาคม 2569",
     "message": "เนื่องจากมีการปรับปรุงระบบ จึงขอเลื่อนวันสอบจากวันที่ 15 มี.ค. เป็นวันที่ 20 มี.ค. 2569",
     "announcedAt": "2026-02-10T09:00:00+07:00"
@@ -704,12 +726,16 @@ curl -X POST https://aimc.or.th/center/aimc_wr_v2/api/announcements \
 ### Request Body
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| announcementId | string (uuid) | ✅ | รหัสประกาศ |
+| announcementId | string (uuid) | ✅ | รหัสประกาศ (ต้องเป็น UUID format เช่น `3f9a1c2e-7d4a-4c2b-9a8e-1f6c8d9e12ab`) |
 | topic | string | ✅ | หัวข้อประกาศ |
 | message | string | ✅ | เนื้อหาประกาศ |
 | announcedAt | string | ✅ | วันที่ประกาศ (ISO 8601) |
 
-### Response Success (200)
+> ⚠️ **หมายเหตุ:** `announcementId` ต้องเป็น UUID format ที่ถูกต้อง  
+> ✅ ถูกต้อง: `3f9a1c2e-7d4a-4c2b-9a8e-1f6c8d9e12ab`  
+> ❌ ไม่ถูกต้อง: `announcement-uuid-001`
+
+### Response Success (201)
 ```json
 {
   "result": true
